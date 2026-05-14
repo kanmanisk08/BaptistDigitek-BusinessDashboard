@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baptist Digitek — Business-in-a-Box Strategy Dashboard</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f8f7f4;
+    --surface: #ffffff;
+    --border: rgba(0,0,0,0.09);
+    --border-strong: rgba(0,0,0,0.18);
+    --text: #1a1a18;
+    --text-muted: #5f5e5a;
+    --text-hint: #888780;
+    --blue-50: #E6F1FB; --blue-200: #85B7EB; --blue-600: #185FA5; --blue-800: #0C447C; --blue-900: #042C53;
+    --teal-50: #E1F5EE; --teal-200: #5DCAA5; --teal-600: #0F6E56; --teal-800: #085041;
+    --amber-50: #FAEEDA; --amber-200: #EF9F27; --amber-600: #854F0B; --amber-800: #633806;
+    --green-50: #EAF3DE; --green-200: #97C459; --green-600: #3B6D11; --green-800: #27500A;
+    --coral-50: #FAECE7; --coral-200: #F0997B; --coral-600: #993C1D; --coral-800: #712B13;
+    --purple-50: #EEEDFE; --purple-200: #AFA9EC; --purple-600: #534AB7; --purple-800: #3C3489;
+    --radius-md: 8px; --radius-lg: 12px; --radius-xl: 16px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1a18; --surface: #2c2c2a; --border: rgba(255,255,255,0.1); --border-strong: rgba(255,255,255,0.22);
+      --text: #f1efe8; --text-muted: #b4b2a9; --text-hint: #888780;
+      --blue-50: #042C53; --blue-200: #185FA5; --blue-600: #85B7EB; --blue-800: #B5D4F4;
+      --teal-50: #04342C; --teal-200: #0F6E56; --teal-600: #5DCAA5; --teal-800: #9FE1CB;
+      --amber-50: #412402; --amber-200: #854F0B; --amber-600: #EF9F27; --amber-800: #FAC775;
+      --green-50: #173404; --green-200: #3B6D11; --green-600: #97C459; --green-800: #C0DD97;
+      --coral-50: #4A1B0C; --coral-200: #993C1D; --coral-600: #F0997B; --coral-800: #F5C4B3;
+      --purple-50: #26215C; --purple-200: #534AB7; --purple-600: #AFA9EC; --purple-800: #CECBF6;
+    }
+  }
+  body { background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, sans-serif; font-size: 15px; line-height: 1.6; }
+  .page { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+  /* HEADER */
+  .header { border-bottom: 0.5px solid var(--border-strong); padding-bottom: 1.5rem; margin-bottom: 2rem; }
+  .header-top { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand-dot { width: 36px; height: 36px; border-radius: 8px; background: var(--blue-600); display: flex; align-items: center; justify-content: center; }
+  .brand-dot i { color: #fff; font-size: 18px; }
+  .brand-name { font-size: 17px; font-weight: 500; color: var(--text); }
+  .brand-sub { font-size: 12px; color: var(--text-hint); }
+  .badge-live { background: var(--green-50); color: var(--green-600); font-size: 11px; padding: 3px 10px; border-radius: 20px; border: 0.5px solid var(--green-200); font-weight: 500; }
+  .header h1 { font-size: 26px; font-weight: 500; margin-top: 1.25rem; color: var(--text); }
+  .header p { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
+
+  /* NAV TABS */
+  .tabs { display: flex; gap: 4px; margin-bottom: 2rem; background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 4px; width: fit-content; flex-wrap: wrap; }
+  .tab { padding: 8px 18px; border-radius: var(--radius-md); font-size: 13px; font-weight: 500; cursor: pointer; color: var(--text-muted); border: none; background: transparent; transition: all 0.15s; }
+  .tab.active { background: var(--blue-600); color: #fff; }
+  .tab:hover:not(.active) { background: var(--bg); color: var(--text); }
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* METRIC CARDS */
+  .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 2rem; }
+  .metric { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-md); padding: 1rem 1.25rem; }
+  .metric-label { font-size: 12px; color: var(--text-hint); margin-bottom: 6px; }
+  .metric-value { font-size: 22px; font-weight: 500; color: var(--text); }
+  .metric-sub { font-size: 11px; color: var(--text-hint); margin-top: 2px; }
+  .metric-up { color: var(--green-600); }
+  .metric-tag { display: inline-block; font-size: 10px; padding: 2px 7px; border-radius: 20px; margin-top: 4px; }
+
+  /* SECTION HEADER */
+  .sec-header { margin-bottom: 1.25rem; }
+  .sec-header h2 { font-size: 18px; font-weight: 500; }
+  .sec-header p { color: var(--text-muted); font-size: 13px; margin-top: 3px; }
+
+  /* CARDS GRID */
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+  .card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; }
+  .card-accent { border-top: 3px solid var(--blue-600); }
+  .card-accent-teal { border-top: 3px solid var(--teal-200); }
+  .card-accent-amber { border-top: 3px solid var(--amber-200); }
+  .card-accent-coral { border-top: 3px solid var(--coral-200); }
+  .card-accent-purple { border-top: 3px solid var(--purple-200); }
+  .card h3 { font-size: 14px; font-weight: 500; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+  .card p { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+  /* CHECKLIST / ITEMS */
+  .checklist { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .checklist li { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: var(--text-muted); }
+  .checklist li i { color: var(--teal-200); font-size: 15px; margin-top: 1px; flex-shrink: 0; }
+  .checklist li strong { color: var(--text); }
+
+  /* PHASE TIMELINE */
+  .timeline { display: flex; flex-direction: column; gap: 0; margin-bottom: 2rem; }
+  .phase { display: grid; grid-template-columns: 100px 1fr; gap: 0; position: relative; }
+  .phase-left { display: flex; flex-direction: column; align-items: center; padding-top: 6px; }
+  .phase-dot { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; color: #fff; flex-shrink: 0; z-index: 1; }
+  .phase-line { flex: 1; width: 2px; background: var(--border); margin: 4px 0; min-height: 40px; }
+  .phase:last-child .phase-line { display: none; }
+  .phase-label { font-size: 10px; color: var(--text-hint); margin-top: 4px; text-align: center; }
+  .phase-content { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1rem 1.25rem; margin: 0 0 12px 0; }
+  .phase-title { font-size: 14px; font-weight: 500; margin-bottom: 6px; }
+  .phase-desc { font-size: 13px; color: var(--text-muted); margin-bottom: 10px; }
+  .phase-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag { font-size: 11px; padding: 3px 10px; border-radius: 20px; border: 0.5px solid var(--border); color: var(--text-muted); background: var(--bg); }
+  .tag-rev { background: var(--green-50); color: var(--green-600); border-color: var(--green-200); }
+  .tag-time { background: var(--blue-50); color: var(--blue-600); border-color: var(--blue-200); }
+  .tag-hot { background: var(--amber-50); color: var(--amber-600); border-color: var(--amber-200); }
+  .tag-risk { background: var(--coral-50); color: var(--coral-600); border-color: var(--coral-200); }
+
+  /* TABLE */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 2rem; }
+  .data-table th { text-align: left; padding: 10px 14px; border-bottom: 0.5px solid var(--border-strong); color: var(--text-hint); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .data-table td { padding: 10px 14px; border-bottom: 0.5px solid var(--border); color: var(--text-muted); vertical-align: top; }
+  .data-table tr:hover td { background: var(--bg); }
+  .data-table td:first-child { color: var(--text); font-weight: 500; }
+  .possible { color: var(--green-600); font-weight: 500; }
+  .stretch { color: var(--amber-600); font-weight: 500; }
+
+  /* CHART WRAPPER */
+  .chart-wrap { position: relative; width: 100%; height: 300px; }
+  .chart-big { height: 360px; }
+
+  /* KIT CARDS */
+  .kit-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+  .kit { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+  .kit-head { padding: 1rem 1.25rem 0.75rem; border-bottom: 0.5px solid var(--border); }
+  .kit-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; }
+  .kit-icon i { font-size: 18px; color: #fff; }
+  .kit-name { font-size: 14px; font-weight: 500; }
+  .kit-sub { font-size: 12px; color: var(--text-hint); }
+  .kit-body { padding: 1rem 1.25rem; }
+  .kit-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 0.5px solid var(--border); font-size: 12px; }
+  .kit-row:last-child { border-bottom: none; }
+  .kit-row-label { color: var(--text-muted); }
+  .kit-row-val { font-weight: 500; color: var(--text); }
+  .kit-price { font-size: 18px; font-weight: 500; padding: 10px 1.25rem; background: var(--bg); border-top: 0.5px solid var(--border); }
+  .kit-price span { font-size: 12px; color: var(--text-hint); font-weight: 400; }
+
+  /* REVENUE SLIDER */
+  .slider-section { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 2rem; }
+  .slider-row { display: flex; align-items: center; gap: 12px; margin-bottom: 1rem; }
+  .slider-row label { font-size: 13px; color: var(--text-muted); width: 180px; flex-shrink: 0; }
+  .slider-row input[type=range] { flex: 1; }
+  .slider-row .val { font-size: 13px; font-weight: 500; min-width: 80px; text-align: right; color: var(--text); }
+  .rev-result { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-top: 1.25rem; }
+  .rev-card { background: var(--bg); border-radius: var(--radius-md); padding: 1rem; }
+  .rev-card-label { font-size: 11px; color: var(--text-hint); margin-bottom: 4px; }
+  .rev-card-val { font-size: 20px; font-weight: 500; }
+  .rev-card-val.blue { color: var(--blue-600); }
+  .rev-card-val.green { color: var(--green-600); }
+  .rev-card-val.amber { color: var(--amber-600); }
+
+  /* FEASIBILITY */
+  .feas-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+  .feas-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; }
+  .feas-label { font-size: 12px; color: var(--text-hint); margin-bottom: 8px; }
+  .feas-score { font-size: 28px; font-weight: 500; margin-bottom: 6px; }
+  .feas-bar { height: 4px; border-radius: 2px; background: var(--border); margin-bottom: 8px; overflow: hidden; }
+  .feas-fill { height: 100%; border-radius: 2px; }
+  .feas-note { font-size: 12px; color: var(--text-muted); }
+
+  /* DIVIDER */
+  .divider { border: none; border-top: 0.5px solid var(--border); margin: 2rem 0; }
+
+  /* CALLOUT */
+  .callout { background: var(--blue-50); border: 0.5px solid var(--blue-200); border-radius: var(--radius-lg); padding: 1rem 1.25rem; margin-bottom: 1.5rem; display: flex; gap: 12px; }
+  .callout i { color: var(--blue-600); font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .callout p { font-size: 13px; color: var(--blue-800); line-height: 1.6; }
+
+  /* LEGEND */
+  .legend { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 12px; font-size: 12px; color: var(--text-muted); }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 2px; }
+
+  @media (max-width: 600px) {
+    .tabs { width: 100%; }
+    .tab { flex: 1; text-align: center; }
+    .phase { grid-template-columns: 80px 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="header">
+    <div class="header-top">
+      <div class="brand">
+        <div class="brand-dot"><i class="ti ti-rocket" aria-hidden="true"></i></div>
+        <div>
+          <div class="brand-name">Baptist Digitek</div>
+          <div class="brand-sub">baptistdigitek.com</div>
+        </div>
+      </div>
+      <span class="badge-live">Strategy Report 2025</span>
+    </div>
+    <h1>Business-in-a-Box — Full Feasibility & Revenue Dashboard</h1>
+    <p>Based on your current services: Software &amp; App Development · SMB India Market · Branding · Web · SEO · Marketing</p>
+
+    <div style="margin-top: 1.5rem; background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem 1.75rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+
+      <div>
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+          <span style="width:28px;height:28px;border-radius:6px;background:var(--blue-50);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="ti ti-bulb" style="color:var(--blue-600);font-size:15px;" aria-hidden="true"></i></span>
+          <span style="font-size:13px;font-weight:600;color:var(--text);">What is Business-in-a-Box?</span>
+        </div>
+        <p style="font-size:13px;color:var(--text-muted);line-height:1.7;">A <strong style="color:var(--text);">productised service model</strong> where Baptist Digitek bundles its existing capabilities — website, app, branding, SEO, ads, and automation — into a single, industry-specific package sold to small and medium businesses across India. Instead of quoting custom projects every time, you sell a ready-made "digital kit" that gets a business live and operational within weeks.</p>
+      </div>
+
+      <div>
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+          <span style="width:28px;height:28px;border-radius:6px;background:var(--teal-50);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="ti ti-currency-rupee" style="color:var(--teal-600);font-size:15px;" aria-hidden="true"></i></span>
+          <span style="font-size:13px;font-weight:600;color:var(--text);">How does the revenue work?</span>
+        </div>
+        <p style="font-size:13px;color:var(--text-muted);line-height:1.7;">There are <strong style="color:var(--text);">two income streams</strong>: a one-time <em>setup fee</em> (₹40k–₹1.5L per kit) paid when you onboard a new client, and a monthly <em>retainer</em> (₹15k–₹30k/month) for ongoing support, ads, and maintenance. Over time, retainer income stacks up and becomes the primary, predictable revenue base — reaching a ₹1 Crore annual run rate by Month 10.</p>
+      </div>
+
+      <div>
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+          <span style="width:28px;height:28px;border-radius:6px;background:var(--amber-50);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="ti ti-map-2" style="color:var(--amber-600);font-size:15px;" aria-hidden="true"></i></span>
+          <span style="font-size:13px;font-weight:600;color:var(--text);">What does this dashboard cover?</span>
+        </div>
+        <p style="font-size:13px;color:var(--text-muted);line-height:1.7;">Five tabs walk you through the full picture: <strong style="color:var(--text);">Feasibility</strong> scores your current capabilities against what the model needs · <strong style="color:var(--text);">Product Kits</strong> details what each industry package includes and costs · <strong style="color:var(--text);">Workflow</strong> maps the 4-phase execution plan · <strong style="color:var(--text);">Revenue Model</strong> lets you simulate income with live sliders · <strong style="color:var(--text);">Growth Timeline</strong> projects month-by-month revenue over 12 months.</p>
+      </div>
+
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button class="tab active" onclick="showTab('feasibility', this)" role="tab">Feasibility</button>
+    <button class="tab" onclick="showTab('kits', this)" role="tab">Product Kits</button>
+    <button class="tab" onclick="showTab('workflow', this)" role="tab">Workflow</button>
+    <button class="tab" onclick="showTab('revenue', this)" role="tab">Revenue Model</button>
+    <button class="tab" onclick="showTab('timeline', this)" role="tab">Growth Timeline</button>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════════════════ FEASIBILITY -->
+  <section id="feasibility" class="section active">
+
+    <div class="sec-header">
+      <h2>Can Baptist Digitek build this?</h2>
+      <p>Scored against your current confirmed capabilities. Only realistic scores based on what you already provide.</p>
+    </div>
+
+    <div class="callout">
+      <i class="ti ti-check-circle" aria-hidden="true"></i>
+      <p><strong>Verdict: Yes — you can launch this immediately.</strong> Baptist Digitek already owns 9 of the 10 capabilities this model requires. The only gap is structured onboarding documentation, which takes 2–4 weeks to build and needs no new hiring.</p>
+    </div>
+
+    <div class="feas-grid">
+      <div class="feas-card">
+        <div class="feas-label">Software / App Development</div>
+        <div class="feas-score" style="color: var(--green-600);">100%</div>
+        <div class="feas-bar"><div class="feas-fill" style="width:100%; background: var(--green-600);"></div></div>
+        <div class="feas-note">Core service. Clinic apps, café ordering, creator storefronts — all within existing capability.</div>
+      </div>
+      <div class="feas-card">
+        <div class="feas-label">Website Development</div>
+        <div class="feas-score" style="color: var(--green-600);">100%</div>
+        <div class="feas-bar"><div class="feas-fill" style="width:100%; background: var(--green-600);"></div></div>
+        <div class="feas-note">Already delivered. Industry-specific templates can be pre-built for rapid deployment.</div>
+      </div>
+      <div class="feas-card">
+        <div class="feas-label">Branding &amp; Identity</div>
+        <div class="feas-score" style="color: var(--green-600);">90%</div>
+        <div class="feas-bar"><div class="feas-fill" style="width:90%; background: var(--green-600);"></div></div>
+        <div class="feas-note">Logo, colours, typography. Slight gap in physical packaging — can outsource or hire 1 designer.</div>
+      </div>
+      <div class="feas-card">
+        <div class="feas-label">SEO</div>
+        <div class="feas-score" style="color: var(--green-600);">100%</div>
+        <div class="feas-bar"><div class="feas-fill" style="width:100%; background: var(--green-600);"></div></div>
+        <div class="feas-note">Confirmed service. Local SEO kits per industry are a natural extension.</div>
+      </div>
+      <div class="feas-card">
+        <div class="feas-label">Digital Marketing &amp; Ads</div>
+        <div class="feas-score" style="color: var(--green-600);">90%</div>
+        <div class="feas-bar"><div class="feas-fill" style="width:90%; background: var(--green-600);"></div></div>
+        <div class="feas-note">Meta/Google ads execution. Pre-made campaign templates per industry needed but straightforward.</div>
+      </div>
+      <div class="feas-card">
+        <div class="feas-label">Business Automation</div>
+        <div class="feas-score" style="color: var(--green-600);">85%</div>
+        <div class="feas-bar"><div class="feas-fill" style="width:85%; background: var(--green-600);"></div></div>
+        <div class="feas-note">WhatsApp automation, appointment systems, review flows — within your software development scope.</div>
+      </div>
+      <div class="feas-card">
+        <div class="feas-label">Industry-Specific Templates</div>
+        <div class="feas-score" style="color: var(--amber-600);">60%</div>
+        <div class="feas-bar"><div class="feas-fill" style="width:60%; background: var(--amber-600);"></div></div>
+        <div class="feas-note">Needs to be built as a one-time investment. 2–4 weeks per industry kit. Start with 1 niche.</div>
+      </div>
+      <div class="feas-card">
+        <div class="feas-label">Recurring Retainer Infrastructure</div>
+        <div class="feas-score" style="color: var(--amber-600);">65%</div>
+        <div class="feas-bar"><div class="feas-fill" style="width:65%; background: var(--amber-600);"></div></div>
+        <div class="feas-note">You deliver services — packaging them into monthly retainer contracts needs pricing + CRM setup.</div>
+      </div>
+      <div class="feas-card">
+        <div class="feas-label">Onboarding System</div>
+        <div class="feas-score" style="color: var(--amber-600);">50%</div>
+        <div class="feas-bar"><div class="feas-fill" style="width:50%; background: var(--amber-600);"></div></div>
+        <div class="feas-note">Biggest gap. Needs documented workflow, checklist, client portal or simple onboarding deck per kit.</div>
+      </div>
+      <div class="feas-card">
+        <div class="feas-label">Content Creation &amp; Social</div>
+        <div class="feas-score" style="color: var(--green-600);">80%</div>
+        <div class="feas-bar"><div class="feas-fill" style="width:80%; background: var(--green-600);"></div></div>
+        <div class="feas-note">Social media setup and content templates. Can be pre-built per industry — Instagram, WhatsApp.</div>
+      </div>
+    </div>
+
+    <div class="sec-header">
+      <h2>Services you have vs what's needed</h2>
+      <p>Direct mapping of your confirmed capabilities to the Business-in-a-Box model requirements.</p>
+    </div>
+    <div style="overflow-x:auto; margin-bottom:2rem;">
+      <table class="data-table">
+        <thead><tr><th>BiB Requirement</th><th>Baptist Digitek Service</th><th>Status</th><th>Gap / Action</th></tr></thead>
+        <tbody>
+          <tr><td>Custom app development</td><td>Software &amp; App Development</td><td class="possible">✓ Ready now</td><td>Build 1 template app per niche</td></tr>
+          <tr><td>Website for each business</td><td>Web Development</td><td class="possible">✓ Ready now</td><td>Pre-build industry wireframes</td></tr>
+          <tr><td>Brand identity (logo, colours)</td><td>Branding / Design</td><td class="possible">✓ Ready now</td><td>Create brand kit templates per niche</td></tr>
+          <tr><td>Local SEO setup</td><td>SEO Service</td><td class="possible">✓ Ready now</td><td>Standardise as a kit deliverable</td></tr>
+          <tr><td>Social media setup</td><td>Digital Marketing</td><td class="possible">✓ Ready now</td><td>Pre-built profile + content packs</td></tr>
+          <tr><td>Meta / Google Ads launch</td><td>Digital Marketing</td><td class="possible">✓ Ready now</td><td>Industry-specific ad templates</td></tr>
+          <tr><td>WhatsApp automation</td><td>Business Automation / Software</td><td class="possible">✓ Ready now</td><td>Reuse existing integration skills</td></tr>
+          <tr><td>Review / CRM automation</td><td>Software Development</td><td class="possible">✓ Ready now</td><td>Build once, reuse per kit</td></tr>
+          <tr><td>Onboarding documentation</td><td>Not formalised yet</td><td class="stretch">⚠ Build needed</td><td>2–4 weeks to create; highest priority</td></tr>
+          <tr><td>Monthly retainer contracts</td><td>Informal only</td><td class="stretch">⚠ Structure needed</td><td>Define 3 retainer tiers + CRM pipeline</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════ PRODUCT KITS -->
+  <section id="kits" class="section">
+
+    <div class="sec-header">
+      <h2>Recommended product kits (realistic for your team)</h2>
+      <p>Start with 1 kit. Master it, then add the second. Prices are India SMB market benchmarks — conservative end.</p>
+    </div>
+
+    <div class="callout">
+      <i class="ti ti-star" aria-hidden="true"></i>
+      <p><strong>Start here: Clinic-in-a-Box</strong> is the highest-potential first kit because healthcare SMBs (clinics, skin centres, physio) spend on digital consistently, have high recurring needs, and have low-quality existing digital presence across India.</p>
+    </div>
+
+    <div class="kit-grid">
+
+      <div class="kit">
+        <div class="kit-head">
+          <div class="kit-icon" style="background: var(--blue-600);"><i class="ti ti-stethoscope" aria-hidden="true"></i></div>
+          <div class="kit-name">Clinic-in-a-Box <span class="badge-live" style="margin-left:6px; font-size:10px;">Start here</span></div>
+          <div class="kit-sub">Dentists · Skin clinics · Physiotherapy · Diagnostics</div>
+        </div>
+        <div class="kit-body">
+          <div class="kit-row"><span class="kit-row-label"><i class="ti ti-palette" style="font-size:13px;"></i> Brand identity</span><span class="kit-row-val">Logo + colours + clinic kit</span></div>
+          <div class="kit-row"><span class="kit-row-label"><i class="ti ti-world" style="font-size:13px;"></i> Website</span><span class="kit-row-val">Appointment + SEO pages</span></div>
+          <div class="kit-row"><span class="kit-row-label"><i class="ti ti-device-mobile" style="font-size:13px;"></i> App</span><span class="kit-row-val">Patient booking app (optional)</span></div>
+          <div class="kit-row"><span class="kit-row-label"><i class="ti ti-brand-whatsapp" style="font-size:13px;"></i> WhatsApp</span><span class="kit-row-val">Appointment reminders bot</span></div>
+          <div class="kit-row"><span class="kit-row-label"><i class="ti ti-search" style="font-size:13px;"></i> SEO</span><span class="kit-row-val">Google Business + local SEO</span></div>
+          <div class="kit-row"><span class="kit-row-label"><i class="ti ti-speakerphone" style="font-size:13px;"></i> Ads</span><span class="kit-row-val">Meta launch campaign</span></div>
+          <div class="kit-row"><span class="kit-row-label"><i class="ti ti-star" style="font-size:13px;"></i> Reviews</span><span class="kit-row-val">Automated review collection</span></div>
+        </div>
+        <div class="kit-price">₹75,000 – ₹1,50,000 <span>setup · retainer ₹15–40k/mo</span></div>
+      </div>
+
+      <div class="kit">
+        <div class="kit-head">
+          <div class="kit-icon" style="background: var(--amber-600);"><i class="ti ti-coffee" aria-hidden="true"></i></div>
+          <div class="kit-name">Café-in-a-Box</div>
+          <div class="kit-sub">Cafés · Dessert shops · Bakeries · Cloud kitchens</div>
+        </div>
+        <div class="kit-body">
+          <div class="kit-row"><span class="kit-row-label"><i class="ti ti-palette" style="font-size:13px;"></i> Brand identity</span><span class="kit-row-val">Logo + menu design + packaging</span></div>
+          <div class="kit-row"><span class="kit-row-label"><i class="ti ti-world" style="font-size:13px;"></i> Website</span><span class="kit-row-val">Menu + ordering + story</span></div>
+          <div class="kit-row"><span class="kit-row-label"><i class="ti ti-qrcode" style="font-size:13px;"></i> QR Menu</span><span class="kit-row-val">Digital menu app (scan-to-order)</span></div>
+          <div class="kit-row"><span class="kit-row-label"><i class="ti ti-brand-instagram" style="font-size:13px;"></i> Instagram</span><span class="kit-row-val">Profile setup + 30-day content pack</span></div>
+          <div class="kit-row"><span class="kit-row-label"><i class="ti ti-speakerphone" style="font-size:13px;"></i> Ads</span><span class="kit-row-val">Local area Meta launch campaign</span></div>
+          <div class="kit-row"><span class="kit-row-label"><i class="ti ti-confetti" style="font-size:13px;"></i> Campaigns</span><span class="kit-row-val">Festival campaign templates</span></div>
+        </div>
+        <div class="kit-price">₹50,000 – ₹1,00,000 <span>setup · retainer ₹10–25k/mo</span></div>
+      </div>
+
+      <div class="kit">
+        <div class="kit-head">
+          <div class="kit-icon" style="background: var(--teal-600);"><i class="ti ti-building-store" aria-hidden="true"></i></div>
+          <div class="kit-name">Retail / Boutique-in-a-Box</div>
+          <div class="kit-sub">Fashion boutiques · Gift stores · Home décor</div>
+        </div>
+        <div class="kit-body">
+          <div class="kit-row"><span class="kit-row-label"><i class="ti ti-palette" style="font-size:13px;"></i> Brand identity</span><span class="kit-row-val">Premium logo + look &amp; feel</span></div>
+          <div class="kit-row"><span class="kit-row-label"><i class="ti ti-shopping-cart" style="font-size:13px;"></i> E-commerce site</span><span class="kit-row-val">Product catalogue + checkout</span></div>
+          <div class="kit-row"><span class="kit-row-label"><i class="ti ti-credit-card" style="font-size:13px;"></i> Payments</span><span class="kit-row-val">Razorpay / UPI integration</span></div>
+          <div class="kit-row"><span class="kit-row-label"><i class="ti ti-brand-whatsapp" style="font-size:13px;"></i> WhatsApp</span><span class="kit-row-val">Order notification bot</span></div>
+          <div class="kit-row"><span class="kit-row-label"><i class="ti ti-brand-instagram" style="font-size:13px;"></i> Social</span><span class="kit-row-val">Instagram + product content</span></div>
+          <div class="kit-row"><span class="kit-row-label"><i class="ti ti-search" style="font-size:13px;"></i> SEO</span><span class="kit-row-val">Local + product SEO</span></div>
+        </div>
+        <div class="kit-price">₹60,000 – ₹1,20,000 <span>setup · retainer ₹12–30k/mo</span></div>
+      </div>
+
+      <div class="kit">
+        <div class="kit-head">
+          <div class="kit-icon" style="background: var(--purple-600);"><i class="ti ti-user-circle" aria-hidden="true"></i></div>
+          <div class="kit-name">Creator Brand-in-a-Box</div>
+          <div class="kit-sub">Artists · Home businesses · Crochet / pottery · Coaches</div>
+        </div>
+        <div class="kit-body">
+          <div class="kit-row"><span class="kit-row-label"><i class="ti ti-palette" style="font-size:13px;"></i> Premium identity</span><span class="kit-row-val">Logo + packaging + visual kit</span></div>
+          <div class="kit-row"><span class="kit-row-label"><i class="ti ti-world" style="font-size:13px;"></i> Storefront</span><span class="kit-row-val">Portfolio + shop website</span></div>
+          <div class="kit-row"><span class="kit-row-label"><i class="ti ti-trending-up" style="font-size:13px;"></i> Launch strategy</span><span class="kit-row-val">Content calendar + Instagram launch</span></div>
+          <div class="kit-row"><span class="kit-row-label"><i class="ti ti-users" style="font-size:13px;"></i> Audience building</span><span class="kit-row-val">Community + email list setup</span></div>
+          <div class="kit-row"><span class="kit-row-label"><i class="ti ti-credit-card" style="font-size:13px;"></i> Payments</span><span class="kit-row-val">UPI + Razorpay + link-in-bio</span></div>
+        </div>
+        <div class="kit-price">₹35,000 – ₹75,000 <span>setup · retainer ₹8–18k/mo</span></div>
+      </div>
+
+    </div>
+
+    <div class="sec-header">
+      <h2>What each kit delivers vs standard agency</h2>
+    </div>
+    <div style="overflow-x:auto; margin-bottom:2rem;">
+      <table class="data-table">
+        <thead><tr><th>Deliverable</th><th>Standard agency</th><th>Baptist Digitek BiB</th></tr></thead>
+        <tbody>
+          <tr><td>Branding</td><td>Separate project, separate vendor</td><td class="possible">Included in kit</td></tr>
+          <tr><td>Website</td><td>1–3 months, variable scope</td><td class="possible">Pre-structured, 2–4 weeks</td></tr>
+          <tr><td>App (if needed)</td><td>Separate contract entirely</td><td class="possible">Add-on or bundled</td></tr>
+          <tr><td>SEO setup</td><td>Monthly agency, separate SLA</td><td class="possible">Included in retainer</td></tr>
+          <tr><td>Social media</td><td>Separate SMM agency</td><td class="possible">Included in retainer</td></tr>
+          <tr><td>Automation</td><td>Not offered by most web agencies</td><td class="possible">Your differentiation</td></tr>
+          <tr><td>Client feels</td><td>Manages 4–5 vendors</td><td class="possible">One partner for everything</td></tr>
+          <tr><td>Time to launch</td><td>3–6 months fragmented</td><td class="possible">14–30 days structured</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════ WORKFLOW -->
+  <section id="workflow" class="section">
+
+    <div class="sec-header">
+      <h2>Complete workflow — from zero to operating</h2>
+      <p>Step-by-step operational process for Baptist Digitek to launch and run Business-in-a-Box.</p>
+    </div>
+
+    <div class="timeline">
+
+      <div class="phase">
+        <div class="phase-left">
+          <div class="phase-dot" style="background: var(--blue-600);">1</div>
+          <div class="phase-line"></div>
+        </div>
+        <div class="phase-content">
+          <div class="phase-title">Choose your first niche</div>
+          <div class="phase-desc">Do not launch all kits at once. Pick the one closest to your existing client portfolio. Most likely: healthcare clinics or cafés.</div>
+          <ul class="checklist" style="margin-top:8px;">
+            <li><i class="ti ti-check" aria-hidden="true"></i><span>Audit existing clients — what industry has the most?</span></li>
+            <li><i class="ti ti-check" aria-hidden="true"></i><span>Choose: Clinic, Café, Retail, or Creator</span></li>
+            <li><i class="ti ti-check" aria-hidden="true"></i><span>Interview 3 potential clients in that niche — confirm pain points</span></li>
+          </ul>
+          <div class="phase-tags">
+            <span class="tag tag-time">Week 1</span>
+            <span class="tag">No cost</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div class="phase-left">
+          <div class="phase-dot" style="background: var(--blue-600);">2</div>
+          <div class="phase-line"></div>
+        </div>
+        <div class="phase-content">
+          <div class="phase-title">Build your first kit template</div>
+          <div class="phase-desc">One-time investment. Build the reusable structure that makes delivery fast and profitable from the second client onward.</div>
+          <ul class="checklist" style="margin-top:8px;">
+            <li><i class="ti ti-check" aria-hidden="true"></i><span><strong>Brand kit:</strong> 3–5 base brand concepts for the industry (colour systems, logo structure)</span></li>
+            <li><i class="ti ti-check" aria-hidden="true"></i><span><strong>Website template:</strong> Industry wireframe with all pages pre-structured (just fill in content)</span></li>
+            <li><i class="ti ti-check" aria-hidden="true"></i><span><strong>SEO template:</strong> Pre-written keyword research + page structure for the industry</span></li>
+            <li><i class="ti ti-check" aria-hidden="true"></i><span><strong>Social kit:</strong> 30-day content calendar template + Canva / Figma post templates</span></li>
+            <li><i class="ti ti-check" aria-hidden="true"></i><span><strong>Ad templates:</strong> 3 Meta campaign structures + copy templates for that industry</span></li>
+            <li><i class="ti ti-check" aria-hidden="true"></i><span><strong>WhatsApp flow:</strong> Pre-built message flow for appointment / order reminders</span></li>
+            <li><i class="ti ti-check" aria-hidden="true"></i><span><strong>Onboarding deck:</strong> 10-slide client onboarding presentation, questionnaire, timeline</span></li>
+          </ul>
+          <div class="phase-tags">
+            <span class="tag tag-time">Weeks 2–4</span>
+            <span class="tag tag-risk">Internal effort — 2–3 team members</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div class="phase-left">
+          <div class="phase-dot" style="background: var(--teal-600);">3</div>
+          <div class="phase-line"></div>
+        </div>
+        <div class="phase-content">
+          <div class="phase-title">Define pricing &amp; packages</div>
+          <div class="phase-desc">Package into 3 tiers. Never quote custom every time — this is what makes the model scalable.</div>
+          <ul class="checklist" style="margin-top:8px;">
+            <li><i class="ti ti-check" aria-hidden="true"></i><span><strong>Starter Kit:</strong> Branding + Website + Google Business — ₹40–75k one-time, ₹8–15k/mo</span></li>
+            <li><i class="ti ti-check" aria-hidden="true"></i><span><strong>Growth Kit:</strong> Starter + App + SEO + Social + Ads — ₹75–1.5L one-time, ₹20–40k/mo</span></li>
+            <li><i class="ti ti-check" aria-hidden="true"></i><span><strong>Scale Kit:</strong> Full ecosystem + automation + monthly campaigns — ₹1.5–3L one-time, ₹40–80k/mo</span></li>
+            <li><i class="ti ti-check" aria-hidden="true"></i><span>Write a 1-page pricing sheet per industry kit</span></li>
+            <li><i class="ti ti-check" aria-hidden="true"></i><span>Set up CRM: Zoho or HubSpot Free to track leads and retainer billing</span></li>
+          </ul>
+          <div class="phase-tags">
+            <span class="tag tag-time">Week 3</span>
+            <span class="tag tag-rev">Defines your revenue ceiling</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div class="phase-left">
+          <div class="phase-dot" style="background: var(--teal-600);">4</div>
+          <div class="phase-line"></div>
+        </div>
+        <div class="phase-content">
+          <div class="phase-title">Land your first 3 BiB clients</div>
+          <div class="phase-desc">Before spending on ads, use warm outreach. First 3 clients validate the model, create your case studies, and fund future growth.</div>
+          <ul class="checklist" style="margin-top:8px;">
+            <li><i class="ti ti-check" aria-hidden="true"></i><span>Message existing contacts — "We have a new complete business package for clinics/cafés"</span></li>
+            <li><i class="ti ti-check" aria-hidden="true"></i><span>Offer a 20% launch discount for the first 3 clients (document everything as case studies)</span></li>
+            <li><i class="ti ti-check" aria-hidden="true"></i><span>Post on LinkedIn: "We're launching a 14-day business setup system for [niche]"</span></li>
+            <li><i class="ti ti-check" aria-hidden="true"></i><span>List on Justdial, IndiaMart, Clutch — as a productized service, not just "web dev"</span></li>
+            <li><i class="ti ti-check" aria-hidden="true"></i><span>Join 2 local business WhatsApp groups in your target city and share the offer</span></li>
+          </ul>
+          <div class="phase-tags">
+            <span class="tag tag-time">Month 1–2</span>
+            <span class="tag tag-rev">First revenue</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div class="phase-left">
+          <div class="phase-dot" style="background: var(--amber-600);">5</div>
+          <div class="phase-line"></div>
+        </div>
+        <div class="phase-content">
+          <div class="phase-title">Deliver the first kit (controlled)</div>
+          <div class="phase-desc">First delivery is about perfecting the process — speed and quality. Document every step for the playbook.</div>
+          <ul class="checklist" style="margin-top:8px;">
+            <li><i class="ti ti-check" aria-hidden="true"></i><span><strong>Week 1:</strong> Client discovery call + onboarding questionnaire + brand options</span></li>
+            <li><i class="ti ti-check" aria-hidden="true"></i><span><strong>Week 2:</strong> Brand approved → website build begins → social profiles created</span></li>
+            <li><i class="ti ti-check" aria-hidden="true"></i><span><strong>Week 3:</strong> Website live → WhatsApp bot deployed → SEO setup done → ads templates handed over</span></li>
+            <li><i class="ti ti-check" aria-hidden="true"></i><span><strong>Week 4:</strong> Review + launch + handover → transition to monthly retainer</span></li>
+            <li><i class="ti ti-check" aria-hidden="true"></i><span>Record every bottleneck — improve template for the next client</span></li>
+          </ul>
+          <div class="phase-tags">
+            <span class="tag tag-time">4 weeks per client</span>
+            <span class="tag tag-hot">Builds the playbook</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div class="phase-left">
+          <div class="phase-dot" style="background: var(--amber-600);">6</div>
+          <div class="phase-line"></div>
+        </div>
+        <div class="phase-content">
+          <div class="phase-title">Convert setup clients to retainers</div>
+          <div class="phase-desc">Retainers = recurring, predictable revenue. Every setup client must be migrated to a monthly retainer at delivery.</div>
+          <ul class="checklist" style="margin-top:8px;">
+            <li><i class="ti ti-check" aria-hidden="true"></i><span>Present retainer options during launch week (not after) — when client satisfaction is highest</span></li>
+            <li><i class="ti ti-check" aria-hidden="true"></i><span>Retainer includes: SEO maintenance, monthly content (8 posts), ad optimisation, performance report</span></li>
+            <li><i class="ti ti-check" aria-hidden="true"></i><span>Offer 3-month retainer upfront at a slight discount to lock in cash flow</span></li>
+            <li><i class="ti ti-check" aria-hidden="true"></i><span>Set up automated monthly invoice + report via Zoho / Razorpay Subscriptions</span></li>
+          </ul>
+          <div class="phase-tags">
+            <span class="tag tag-time">Month 2 onward</span>
+            <span class="tag tag-rev">Recurring income begins</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div class="phase-left">
+          <div class="phase-dot" style="background: var(--green-600);">7</div>
+          <div class="phase-line"></div>
+        </div>
+        <div class="phase-content">
+          <div class="phase-title">Build case studies &amp; launch marketing</div>
+          <div class="phase-desc">After 3 successful kits, you have proof. Now market aggressively using real results.</div>
+          <ul class="checklist" style="margin-top:8px;">
+            <li><i class="ti ti-check" aria-hidden="true"></i><span>Publish 1 case study per kit on your website — before/after, timeline, results, client quote</span></li>
+            <li><i class="ti ti-check" aria-hidden="true"></i><span>Launch a dedicated "Business-in-a-Box" landing page with industry selector</span></li>
+            <li><i class="ti ti-check" aria-hidden="true"></i><span>Run Google Ads: "complete digital setup for clinics India" — ₹20–40k/month budget</span></li>
+            <li><i class="ti ti-check" aria-hidden="true"></i><span>Start LinkedIn content: "We launched a clinic in 14 days — here's how"</span></li>
+            <li><i class="ti ti-check" aria-hidden="true"></i><span>Referral programme: existing clients refer → 1 month free retainer for them</span></li>
+          </ul>
+          <div class="phase-tags">
+            <span class="tag tag-time">Month 3–4</span>
+            <span class="tag tag-hot">Growth begins here</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div class="phase-left">
+          <div class="phase-dot" style="background: var(--green-600);">8</div>
+        </div>
+        <div class="phase-content">
+          <div class="phase-title">Launch second industry kit &amp; scale</div>
+          <div class="phase-desc">By Month 4–5, the first kit runs on autopilot. Now build Kit #2. Repeat the process. Each new kit multiplies addressable market.</div>
+          <ul class="checklist" style="margin-top:8px;">
+            <li><i class="ti ti-check" aria-hidden="true"></i><span>Apply same template system to second niche (e.g. Café after Clinic)</span></li>
+            <li><i class="ti ti-check" aria-hidden="true"></i><span>Hire 1 dedicated account manager to manage retainer clients</span></li>
+            <li><i class="ti ti-check" aria-hidden="true"></i><span>Scale ads budget as retainer income covers it</span></li>
+            <li><i class="ti ti-check" aria-hidden="true"></i><span>Explore partnerships with chartered accountants, business consultants who refer SMB clients</span></li>
+          </ul>
+          <div class="phase-tags">
+            <span class="tag tag-time">Month 5+</span>
+            <span class="tag tag-rev">Revenue compounds</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════ REVENUE -->
+  <section id="revenue" class="section">
+
+    <div class="sec-header">
+      <h2>Revenue model — realistic projections only</h2>
+      <p>Based on India SMB market pricing. Conservative scenario shown by default. Adjust sliders to model your scenario.</p>
+    </div>
+
+    <div class="slider-section">
+      <div class="slider-row">
+        <label>Setup clients per month</label>
+        <input type="range" id="s-clients" min="1" max="10" step="1" value="3">
+        <span class="val" id="v-clients">3</span>
+      </div>
+      <div class="slider-row">
+        <label>Avg setup fee (₹)</label>
+        <input type="range" id="s-setup" min="40000" max="200000" step="5000" value="80000">
+        <span class="val" id="v-setup">₹80,000</span>
+      </div>
+      <div class="slider-row">
+        <label>Retainer clients (cumulative)</label>
+        <input type="range" id="s-retainer" min="0" max="40" step="1" value="6">
+        <span class="val" id="v-retainer">6</span>
+      </div>
+      <div class="slider-row">
+        <label>Avg monthly retainer (₹)</label>
+        <input type="range" id="s-retfee" min="8000" max="80000" step="2000" value="22000">
+        <span class="val" id="v-retfee">₹22,000</span>
+      </div>
+      <div class="rev-result">
+        <div class="rev-card">
+          <div class="rev-card-label">Monthly setup revenue</div>
+          <div class="rev-card-val blue" id="r-setup">₹2,40,000</div>
+        </div>
+        <div class="rev-card">
+          <div class="rev-card-label">Monthly retainer revenue</div>
+          <div class="rev-card-val green" id="r-ret">₹1,32,000</div>
+        </div>
+        <div class="rev-card">
+          <div class="rev-card-label">Total monthly revenue</div>
+          <div class="rev-card-val amber" id="r-total">₹3,72,000</div>
+        </div>
+        <div class="rev-card">
+          <div class="rev-card-label">Annual run rate</div>
+          <div class="rev-card-val" id="r-annual" style="color: var(--purple-600);">₹44,64,000</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec-header">
+      <h2>Revenue breakdown by stream</h2>
+      <p>Three income streams — setup, retainer, and add-ons. Retainer becomes dominant by Month 6.</p>
+    </div>
+
+    <div class="legend">
+      <span class="legend-item"><span class="legend-dot" style="background:#185FA5;"></span>Setup fees</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#0F6E56;"></span>Retainer income</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#854F0B;"></span>Add-ons / Apps</span>
+    </div>
+    <div class="chart-wrap chart-big" style="margin-bottom:2rem;">
+      <canvas id="revChart" role="img" aria-label="Stacked bar chart showing monthly revenue growth from Month 1 through Month 12, broken into setup fees, retainer income, and add-ons. Revenue grows from approximately 1 lakh in Month 1 to 8+ lakhs by Month 12.">Monthly revenue by stream, Month 1–12.</canvas>
+    </div>
+
+    <div class="sec-header">
+      <h2>Revenue scenarios</h2>
+    </div>
+    <div style="overflow-x:auto; margin-bottom:2rem;">
+      <table class="data-table">
+        <thead><tr><th>Scenario</th><th>Setup clients/mo</th><th>Retainer clients</th><th>Monthly revenue</th><th>Annual revenue</th><th>When achievable</th></tr></thead>
+        <tbody>
+          <tr><td>Conservative (Month 1–3)</td><td>1–2</td><td>0–3</td><td class="possible">₹80k – 2L</td><td>₹10 – 24L</td><td class="tag-time" style="font-size:12px;">Months 1–3</td></tr>
+          <tr><td>Realistic (Month 4–6)</td><td>3–4</td><td>6–12</td><td class="possible">₹3.5L – 6L</td><td>₹42 – 72L</td><td class="tag-time" style="font-size:12px;">Months 4–6</td></tr>
+          <tr><td>Growth (Month 7–9)</td><td>5–7</td><td>15–25</td><td class="possible">₹7L – 12L</td><td>₹84L – 1.4 Cr</td><td class="tag-time" style="font-size:12px;">Months 7–9</td></tr>
+          <tr><td>Scale (Month 10–12+)</td><td>8–12</td><td>30–50</td><td class="possible">₹12L – 20L</td><td>₹1.4 – 2.4 Cr</td><td class="tag-time" style="font-size:12px;">Month 12+</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="cards">
+      <div class="card card-accent-teal">
+        <h3><i class="ti ti-repeat" style="font-size:16px; color:var(--teal-200);" aria-hidden="true"></i>Why retainers matter</h3>
+        <p>Every setup client you convert to a retainer adds permanent monthly income. 20 retainer clients at ₹20k/month = ₹4 lakh/month guaranteed — before you sign a single new setup project. That's financial stability.</p>
+      </div>
+      <div class="card card-accent">
+        <h3><i class="ti ti-trending-up" style="font-size:16px; color:var(--blue-200);" aria-hidden="true"></i>Add-on revenue</h3>
+        <p>Once a client is in your ecosystem, upselling is natural. Apps, video shoots, AI chatbots, influencer campaigns — each adds ₹25k–2L on top of the retainer. Target 30% of clients buying 1 add-on per year.</p>
+      </div>
+      <div class="card card-accent-amber">
+        <h3><i class="ti ti-users-group" style="font-size:16px; color:var(--amber-200);" aria-hidden="true"></i>Referral multiplier</h3>
+        <p>SMB owners talk to each other — CA networks, trade associations, local business groups. One happy clinic owner in Chennai refers 3 others. Build a formal referral programme from Month 3 onward.</p>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════ TIMELINE -->
+  <section id="timeline" class="section">
+
+    <div class="sec-header">
+      <h2>12-month growth timeline — when revenue gets serious</h2>
+      <p>Month-by-month targets, milestones, and revenue expectations. Realistic, not aspirational.</p>
+    </div>
+
+    <div class="legend">
+      <span class="legend-item"><span class="legend-dot" style="background:#185FA5;"></span>Setup revenue</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#0F6E56;"></span>Retainer revenue</span>
+    </div>
+    <div class="chart-wrap" style="margin-bottom:2rem; height:280px;">
+      <canvas id="timelineChart" role="img" aria-label="Line chart showing setup revenue and retainer revenue from Month 1 through Month 12. Setup revenue fluctuates but grows. Retainer revenue steadily increases and eventually exceeds setup revenue by Month 8.">Setup vs retainer revenue trajectory over 12 months.</canvas>
+    </div>
+
+    <div style="overflow-x:auto; margin-bottom:2rem;">
+      <table class="data-table">
+        <thead><tr><th>Month</th><th>Key Milestone</th><th>Setup Rev</th><th>Retainer Rev</th><th>Total</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Kit template built · First 2 warm outreach clients</td><td>₹80k</td><td>₹0</td><td>₹80,000</td><td class="tag tag-time" style="font-size:11px;">Foundation</td></tr>
+          <tr><td>2</td><td>First 2 kits delivered · Retainers pitched</td><td>₹1.2L</td><td>₹30k</td><td>₹1,50,000</td><td class="tag tag-time" style="font-size:11px;">Proving</td></tr>
+          <tr><td>3</td><td>3rd kit live · Case study #1 published · 4 retainers</td><td>₹1.6L</td><td>₹80k</td><td>₹2,40,000</td><td class="tag tag-time" style="font-size:11px;">Validating</td></tr>
+          <tr><td>4</td><td>Landing page live · Google Ads launched · 7 retainers</td><td>₹2.4L</td><td>₹1.4L</td><td>₹3,80,000</td><td class="tag tag-hot" style="font-size:11px;">Accelerating</td></tr>
+          <tr><td>5</td><td>Kit #2 niche launched · 10 retainers · Referrals starting</td><td>₹3.2L</td><td>₹2L</td><td>₹5,20,000</td><td class="tag tag-hot" style="font-size:11px;">Accelerating</td></tr>
+          <tr><td>6</td><td>15 retainers · Add-ons revenue kicks in · 1 hire</td><td>₹4L</td><td>₹3L</td><td>₹7,00,000</td><td class="tag tag-rev" style="font-size:11px;">Growth phase</td></tr>
+          <tr><td>7</td><td>20 retainers · Second kit case studies published</td><td>₹4.8L</td><td>₹4L</td><td>₹8,80,000</td><td class="tag tag-rev" style="font-size:11px;">Growth phase</td></tr>
+          <tr><td>8</td><td>Retainer > Setup for first time · Predictable base</td><td>₹5.2L</td><td>₹5.5L</td><td>₹10,70,000</td><td class="tag tag-rev" style="font-size:11px;">Stability</td></tr>
+          <tr><td>9</td><td>30 retainers · Kit #3 exploration · Partnership deals</td><td>₹5.6L</td><td>₹6.5L</td><td>₹12,10,000</td><td class="tag tag-rev" style="font-size:11px;">Stability</td></tr>
+          <tr><td>10</td><td>₹1 Cr annual run rate crossed · Scale ops</td><td>₹6L</td><td>₹7.5L</td><td>₹13,50,000</td><td class="possible" style="font-size:12px;">High revenue</td></tr>
+          <tr><td>11</td><td>35–40 retainers · LinkedIn thought leadership active</td><td>₹6.5L</td><td>₹8L</td><td>₹14,50,000</td><td class="possible" style="font-size:12px;">High revenue</td></tr>
+          <tr><td>12</td><td>50 retainers target · ₹1.5–2Cr annualised</td><td>₹7L</td><td>₹10L</td><td>₹17,00,000</td><td class="possible" style="font-size:12px;">High revenue</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout" style="border-color: var(--green-200); background: var(--green-50);">
+      <i class="ti ti-clock" style="color: var(--green-600);" aria-hidden="true"></i>
+      <p style="color: var(--green-800);"><strong>When does high revenue start?</strong> Month 8 is the inflection point — retainer income exceeds setup revenue, giving Baptist Digitek a predictable ₹5.5L+ monthly base regardless of new clients. By Month 10, you cross ₹1 Crore annual run rate. Month 12 target: ₹1.5–2 Cr annualised. These are realistic if you execute Phases 1–4 of the workflow.</p>
+    </div>
+
+    <div class="metrics">
+      <div class="metric">
+        <div class="metric-label">Revenue inflection point</div>
+        <div class="metric-value">Month 8</div>
+        <div class="metric-sub">Retainer exceeds setup income</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">₹1 Crore run rate</div>
+        <div class="metric-value">Month 10</div>
+        <div class="metric-sub">If 3–4 setups/month + 30 retainers</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Year 1 total (realistic)</div>
+        <div class="metric-value">₹80L – 1.2Cr</div>
+        <div class="metric-sub">Conservative to growth scenario</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Year 2 potential</div>
+        <div class="metric-value">₹2 – 3.5Cr</div>
+        <div class="metric-sub">With 3 kits + 60–80 retainers</div>
+      </div>
+    </div>
+
+  </section>
+
+</div>
+
+<script>
+function showTab(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+function fmt(n) { return '₹' + Math.round(n).toLocaleString('en-IN'); }
+
+const inputs = {
+  clients: document.getElementById('s-clients'),
+  setup: document.getElementById('s-setup'),
+  retainer: document.getElementById('s-retainer'),
+  retfee: document.getElementById('s-retfee'),
+};
+function updateCalc() {
+  const c = +inputs.clients.value, s = +inputs.setup.value, r = +inputs.retainer.value, rf = +inputs.retfee.value;
+  document.getElementById('v-clients').textContent = c;
+  document.getElementById('v-setup').textContent = fmt(s);
+  document.getElementById('v-retainer').textContent = r;
+  document.getElementById('v-retfee').textContent = fmt(rf);
+  const ms = c * s, mr = r * rf, mt = ms + mr;
+  document.getElementById('r-setup').textContent = fmt(ms);
+  document.getElementById('r-ret').textContent = fmt(mr);
+  document.getElementById('r-total').textContent = fmt(mt);
+  document.getElementById('r-annual').textContent = fmt(mt * 12);
+}
+Object.values(inputs).forEach(i => i.addEventListener('input', updateCalc));
+updateCalc();
+
+const months = ['M1','M2','M3','M4','M5','M6','M7','M8','M9','M10','M11','M12'];
+const setupData = [80000,120000,160000,240000,320000,400000,480000,520000,560000,600000,650000,700000];
+const retainerData = [0,30000,80000,140000,200000,300000,400000,550000,650000,750000,800000,1000000];
+const addonsData = [0,0,20000,30000,40000,60000,80000,100000,120000,140000,160000,180000];
+
+new Chart(document.getElementById('revChart'), {
+  type: 'bar',
+  data: {
+    labels: months,
+    datasets: [
+      { label: 'Setup fees', data: setupData, backgroundColor: '#185FA5', stack: 'rev' },
+      { label: 'Retainer income', data: retainerData, backgroundColor: '#0F6E56', stack: 'rev' },
+      { label: 'Add-ons / Apps', data: addonsData, backgroundColor: '#854F0B', stack: 'rev' },
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { stacked: true, ticks: { color: '#888780' }, grid: { display: false } },
+      y: { stacked: true, ticks: { color: '#888780', callback: v => '₹' + (v/100000).toFixed(1) + 'L' }, grid: { color: 'rgba(0,0,0,0.06)' } }
+    }
+  }
+});
+
+new Chart(document.getElementById('timelineChart'), {
+  type: 'line',
+  data: {
+    labels: months,
+    datasets: [
+      { label: 'Setup revenue', data: setupData, borderColor: '#185FA5', backgroundColor: 'rgba(24,95,165,0.08)', fill: true, tension: 0.4, borderWidth: 2, pointRadius: 4, pointBackgroundColor: '#185FA5' },
+      { label: 'Retainer revenue', data: retainerData, borderColor: '#0F6E56', backgroundColor: 'rgba(15,110,86,0.08)', fill: true, tension: 0.4, borderWidth: 2, pointRadius: 4, pointBackgroundColor: '#0F6E56', borderDash: [0,0] },
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { color: '#888780' }, grid: { display: false } },
+      y: { ticks: { color: '#888780', callback: v => '₹' + (v/100000).toFixed(1) + 'L' }, grid: { color: 'rgba(0,0,0,0.06)' } }
+    }
+  }
+});
+</script>
+</body>
+</html>
